@@ -41,5 +41,10 @@ The goal was to get GAE logs into Elasticsearch. We already have a Logstash-ES i
 
 Json_Event is nice - as it saves a tonne of cycles on filtering etc. To know more about it - http://cookbook.logstash.net/recipes/apache-json-logs/
 
+GAE Logservice API
+==================
+https://developers.google.com/appengine/docs/python/logs/
+
+A side note - I used the Python API to get the logs - even though the app is in Java. 
 
 *** Another way to simulate it - try fetching logs from a past time period (more than 100M). This restriction happens even if you have billing + log retention set to 30 days.
