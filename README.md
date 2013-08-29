@@ -1,5 +1,17 @@
+Why?
+====
+GAE was not designed for Operational (Ops) tasks. Take their log browsing experience for example. Much improvement to be desired.
+
+Yes, you can download logs via appcfg (https://developers.google.com/appengine/docs/python/tools/uploadinganapp#Python_Downloading_logs). However, GAE seems to have an undocumented 100M log buffer. Appcfg can only download that. You need to run appcfg very frequently to empty the buffer otherwise logs are lost***. In our case - this was a big issue as req logs + app logs were resulting in a lot of data. We like our logs :)  
+
+The API does not have any such restriction, as long as you have billing + log retention setup properly.
+
+I love Kibana + ES (+ Logstash) - so getting GAE logs in the same place... is nice.
+
 Pre-req
 =======
+
+- You need to turn on remote_api for your GAE app
 
 - Install yaml,simplejson module -> sudo pip install PyYAML
 
@@ -21,7 +33,7 @@ fetcher.conf contains the GAE app_name, username and password. If running this i
 
 Usage
 =====
-[] Todo
+[ ] Todo
 
 Logstash Integration
 ====================
@@ -30,4 +42,4 @@ The goal was to get GAE logs into Elasticsearch. We already have a Logstash-ES i
 Json_Event is nice - as it saves a tonne of cycles on filtering etc. To know more about it - http://cookbook.logstash.net/recipes/apache-json-logs/
 
 
-
+*** Another way to simulate it - try fetching logs from a past time period (more than 100M). This restriction happens even if you have billing + log retention set to 30 days.
