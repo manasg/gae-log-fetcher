@@ -4,11 +4,12 @@ Pre-req
 - Install yaml,simplejson module -> sudo pip install PyYAML
 
 - Download GAE SDK - python/linux - http://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip
--- Unzip to a folder and include it in path
 
--- export PYTHONPATH=/repos/gae-log-fetcher/gae_sdk/google_appengine:/repos/gae-log-fetcher/gae_sdk/google_appengine/lib/fancy_urllib/
+- Unzip to a folder and include it in path
 
--- The important part is fancy_urllib :)
+- export PYTHONPATH=/repos/gae-log-fetcher/gae_sdk/google_appengine:/repos/gae-log-fetcher/gae_sdk/google_appengine/lib/fancy_urllib/
+
+- The important part is fancy_urllib :)
 
 Test Setup
 ==========
@@ -20,6 +21,7 @@ fetcher.conf contains the GAE app_name, username and password. If running this i
 
 Usage
 =====
+[] Todo
 
 Logstash Integration
 ====================
