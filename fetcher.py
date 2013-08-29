@@ -121,7 +121,10 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
                 offset=offset):
             
             logger.debug("Retrieved - %s" % req_log.combined)
+            
             i = i + 1
+            if i % 100 == 0:
+                logger.info("Fetched %d logs so far" % i)
 
             f.write(_prepare_json(req_log))
             f.write('\n')
