@@ -15,17 +15,14 @@ import getpass
 import simplejson as json
 import base64
 
+import argparse
+
 RECOVERY_LOG = '/tmp/recovery.log'
 PERIOD_LENGTH = timedelta(minutes=2)
 PERIOD_END_NOW = timedelta(minutes=1)
 GAE_TZ = 'America/Los_Angeles'
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch = logging.StreamHandler()
-ch.setFormatter(formatter)
-logger.addHandler(ch)
 
 last_offset = None
 last_time_period = None
@@ -96,7 +93,7 @@ def get_time_period():
 
     return {'start':s, 'end':e, 'start_human':start, 'end_human':end} 
 
-def fetch_logs(time_period, recovery_log, username, password, app_name, version_ids, offset=None, dest="/tmp/gae_log.log"):
+def fetch_logs(time_period, recovery_log, username, password, app_name, version_ids, offset=None, dest="/tmp/gae_log.log",append=False):
     f = lambda : (username, password)
 
     remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
@@ -113,7 +110,14 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
     last_time_period = time_period
    
     i = 0
-    f = open(dest,'w')
+    
+    if append:
+        mode = 'a'
+    else:
+        mode = 'w'
+    
+    f = open(dest, mode)
+
     try:
         for req_log in logservice.fetch(end_time=end, 
                 start_time=start, 
@@ -147,6 +151,13 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, termination_handler)
     signal.signal(signal.SIGTERM, termination_handler)
 
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    
+    # getting app name & credentials from a file
     config = ConfigParser.SafeConfigParser()
     config.read('fetcher.conf')
     
@@ -154,7 +165,21 @@ if __name__ == '__main__':
     password = config.get('GAE','password')
     app_name = config.get('GAE','app_name')
     version_ids = ['1']
+
+    # any other run time options
+    parser = argparse.ArgumentParser()
+    parser.add_argument("log_dump_file", help="Name of file to dump logs in Json")
+    parser.add_argument("--append", help="Append instead of overwrite to log-dump-file", action='store_true')
+    parser.add_argument("--debug", help="use DEBUG log level", action='store_true')
+    args = parser.parse_args()
+    
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
+    dump = args.log_dump_file
+    append = args.append
+    
     offset = None
-    fetch_logs(get_time_period(), RECOVERY_LOG, username, password, app_name, version_ids, offset)
+    fetch_logs(get_time_period(), RECOVERY_LOG, username, password, app_name, version_ids, offset, dump, append)
 
 
