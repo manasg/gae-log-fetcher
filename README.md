@@ -35,14 +35,19 @@ Usage
 =====
 Interactively
 -------------
+
+```
 export PYTHONPATH=......
 python fetcher.py -h
+```
 
 via cron
 --------
+```
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
 PYTHONPATH=/home/manas/gae-log-fetcher/gae_sdk/google_appengine:/home/manas/gae-log-fetcher/gae_sdk/google_appengine/lib/fancy_urllib
 */2 * * * * cd /home/manas/gae-log-fetcher; /usr/bin/python fetcher.py /mnt/gae_logs/gae.log --append >> /mnt/gae_logs/fetcher.log 2>&1
+```
 
 Logstash Integration
 ====================
