@@ -157,28 +157,34 @@ if __name__ == '__main__':
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     
+
+    # other run time options
+    parser = argparse.ArgumentParser()
+    parser.add_argument("log_dump_file", help="Name of file to dump logs in Json")
+    parser.add_argument("--append", help="Append instead of overwrite to log-dump-file", action='store_true')
+    parser.add_argument("--gae_config", 
+            help="Config file for GAE user, pass, app. If not specified, it looks for fetcher.conf")
+
+    parser.add_argument("--debug", help="use DEBUG log level", action='store_true')
+    args = parser.parse_args()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
+    dump = args.log_dump_file
+    append = args.append
+
     # getting app name & credentials from a file
+    conf = args.gae_config or 'fetcher.conf'
+
     config = ConfigParser.SafeConfigParser()
-    config.read('fetcher.conf')
+    config.read(conf)
     
     username = config.get('GAE','username')
     password = config.get('GAE','password')
     app_name = config.get('GAE','app_name')
     version_ids = ['1']
 
-    # any other run time options
-    parser = argparse.ArgumentParser()
-    parser.add_argument("log_dump_file", help="Name of file to dump logs in Json")
-    parser.add_argument("--append", help="Append instead of overwrite to log-dump-file", action='store_true')
-    parser.add_argument("--debug", help="use DEBUG log level", action='store_true')
-    args = parser.parse_args()
-    
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-
-    dump = args.log_dump_file
-    append = args.append
-    
     offset = None
     fetch_logs(get_time_period(), RECOVERY_LOG, username, password, app_name, version_ids, offset, dump, append)
 
