@@ -87,8 +87,8 @@ def get_time_period():
     gae_tz = tz.gettz(GAE_TZ)
 
     end = datetime.now(gae_tz) - PERIOD_END_NOW 
-    #seconds=0
-    end = end - timedelta(seconds=end.second)
+    #seconds, microsecond =0
+    end = datetime(end.year, end.month, end.day, end.hour, end.minute, 0,0, end.tzinfo)
     start = end - PERIOD_LENGTH
     
     e = int(end.strftime("%s"))
