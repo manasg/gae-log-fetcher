@@ -1,6 +1,6 @@
 Why?
 ====
-GAE was not designed for Operational (Ops) tasks. Take their log browsing experience for example. Much improvement to be desired.
+Certain Operational (Ops) tasks on GAE can be tedious. The log browsing experience for example could be improved.
 
 Yes, you can download logs via appcfg (https://developers.google.com/appengine/docs/python/tools/uploadinganapp#Python_Downloading_logs). However, GAE seems to have an undocumented 100M log buffer. Appcfg can only download that. You need to run appcfg very frequently to empty the buffer otherwise logs are lost***. In our case - this was a big issue as req logs + app logs were resulting in a lot of data. We like our logs :)  
 
@@ -33,7 +33,16 @@ fetcher.conf contains the GAE app_name, username and password. If running this i
 
 Usage
 =====
-[ ] Todo
+Interactively
+-------------
+export PYTHONPATH=......
+python fetcher.py -h
+
+via cron
+--------
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
+PYTHONPATH=/home/manas/gae-log-fetcher/gae_sdk/google_appengine:/home/manas/gae-log-fetcher/gae_sdk/google_appengine/lib/fancy_urllib
+*/2 * * * * cd /home/manas/gae-log-fetcher; /usr/bin/python fetcher.py /mnt/gae_logs/gae.log --append >> /mnt/gae_logs/fetcher.log 2>&1
 
 Logstash Integration
 ====================
@@ -46,5 +55,11 @@ GAE Logservice API
 https://developers.google.com/appengine/docs/python/logs/
 
 A side note - I used the Python API to get the logs - even though the app is in Java. 
+
+TODO
+====
+[ ] Write a function to recover/resume interrupted downloads. It goes through the log and picks up incomplete runs (I log offset and time period). 
+
+
 
 *** Another way to simulate it - try fetching logs from a past time period (more than 100M). This restriction happens even if you have billing + log retention set to 30 days.
