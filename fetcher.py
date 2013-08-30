@@ -48,9 +48,9 @@ def _prepare_json(req_log):
     data['response'] = req_log.status
     data['latency_ms'] = req_log.latency
     
-    # UTC Timestamp - this helps if events are not coming in chronological order
+    # Timestamp - this helps if events are not coming in chronological order
     t = datetime.fromtimestamp(req_log.end_time)
-    t = t.replace(tzinfo=tz.tzutc())
+    t = t.replace(tzinfo=tz.gettz(GAE_TZ))
     data['@timestamp'] = t.isoformat()
     
     # processing APP Logs
@@ -59,13 +59,13 @@ def _prepare_json(req_log):
         app_log_msgs = []
         for app_log in req_log.app_logs:
             t = datetime.fromtimestamp(app_log.time)
-            t = t.replace(tzinfo=tz.tzutc())
-            t = t.astimezone(tz.gettz(GAE_TZ))
+            t = t.replace(tzinfo=tz.gettz(GAE_TZ))
             l = _get_level(app_log.level)
-            app_log_msgs.append("\t%s %s %s" 
+            app_log_msgs.append("%s %s %s" 
                 %(t.isoformat(), l, app_log.message) )
-        #
-        msg += "\n".join(app_log_msgs)
+
+        # The new lines give it more readability in Kibana
+        msg = msg + "\n\n" + "\n".join(app_log_msgs)
 
     data['@message'] = msg
     
