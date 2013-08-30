@@ -1,2 +1,5 @@
 fetcher.conf
+
 gae_sdk
+
+*.swp
