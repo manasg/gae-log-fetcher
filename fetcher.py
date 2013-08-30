@@ -83,16 +83,18 @@ def termination_handler(signal, frame):
     sys.exit(0)
 
 def get_time_period():
-    end = datetime.utcnow() - PERIOD_END_NOW 
-    #seconds=0
-    end = datetime(end.year, end.month, end.day, end.hour, end.minute, 0)
-    end = end.replace(tzinfo=tz.tzutc())
-    # GAE logservice API expects UTC - although req_log.combined will show PDT timestamps
-    start = end - PERIOD_LENGTH
-
+    # GAE logservice API expects everything in PDT
     gae_tz = tz.gettz(GAE_TZ)
-    return {'start':start, 'end':end, 
-        'start_gae_tz':start.astimezone(gae_tz), 'end_gae_tz':end.astimezone(gae_tz)}
+
+    end = datetime.now(gae_tz) - PERIOD_END_NOW 
+    #seconds=0
+    end = end - timedelta(seconds=end.second)
+    start = end - PERIOD_LENGTH
+    
+    e = int(end.strftime("%s"))
+    s = int(start.strftime("%s"))
+
+    return {'start':s, 'end':e, 'start_human':start, 'end_human':end} 
 
 def fetch_logs(time_period, recovery_log, username, password, app_name, version_ids, offset=None, dest="/tmp/gae_log.log"):
     f = lambda : (username, password)
@@ -100,11 +102,11 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
     remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
     version_ids = version_ids
    
-    end = int(time_period['end'].strftime("%s"))
-    start = int(time_period['start'].strftime("%s"))
+    end = time_period['end']
+    start = time_period['start']
 
     logger.info("Fetching logs from %s to %s (GAE TZ)" 
-            % (time_period['start_gae_tz'],time_period['end_gae_tz']))
+            % (time_period['start_human'],time_period['end_human']))
 
     # TODO - move to classes instead of globals
     global last_time_period 
