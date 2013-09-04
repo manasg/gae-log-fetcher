@@ -123,7 +123,15 @@ def _split_time_period(start,end, interval_s=10):
 def fetch_logs(time_period, recovery_log, username, password, app_name, version_ids, offset=None, dest="/tmp/gae_log.log",append=False):
     f = lambda : (username, password)
 
-    remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
+    try:
+        remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
+    except google.appengine.ext.remote_api.remote_api_stub.ConfigurationError:
+        # Token expired?
+        logger.exception("Token validation failed. Probably expired. Will retry")
+        remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
+    
+    logger.info("Successfully authenticated")
+
     version_ids = version_ids
 
     logger.info("Fetching logs from %s to %s (GAE TZ)" 
