@@ -18,14 +18,21 @@ import base64
 import argparse
 
 RECOVERY_LOG = '/tmp/recovery.log'
-PERIOD_LENGTH = timedelta(minutes=2)
-PERIOD_END_NOW = timedelta(minutes=1)
+
+# end_time is 3 mins before now
+PERIOD_END_NOW = timedelta(minutes=3)
+
+# period length
+PERIOD_LENGTH = timedelta(minutes=1)
+
 GAE_TZ = tz.gettz('US/Pacific')
 
 logger = logging.getLogger()
 
 last_offset = None
 last_time_period = None
+
+ENCODING = "ISO-8859-1"
 
 def _get_level(level):
     # TODO - better? 
@@ -69,7 +76,7 @@ def _prepare_json(req_log):
 
     data['@message'] = msg
     
-    return json.dumps(data)
+    return json.dumps(data, encoding=ENCODING)
 
 
 def termination_handler(signal, frame):
@@ -93,18 +100,40 @@ def get_time_period():
 
     return {'start':s, 'end':e, 'start_human':start, 'end_human':end} 
 
+def _split_time_period(start,end, interval_s=10):
+    """
+        Splits given time_period in segments based on interval
+        and returns a list of tuples [(start,end),...]
+
+        Uses seconds since epoch
+    """
+    r = range(start, end, interval_s)
+    segments = []
+    for s in r:
+        e = s + interval_s
+        if e > end:
+            e = end
+        segment = (s, e)
+        segments.append(segment)
+        
+    logger.debug("Splitted %s:%s into %d segments - %s" % (start,end,len(segments),segments))
+
+    return segments
+
 def fetch_logs(time_period, recovery_log, username, password, app_name, version_ids, offset=None, dest="/tmp/gae_log.log",append=False):
     f = lambda : (username, password)
 
     remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
     version_ids = version_ids
+
+    logger.info("Fetching logs from %s to %s (GAE TZ)" 
+            % (time_period['start_human'],time_period['end_human']))
    
     end = time_period['end']
     start = time_period['start']
 
-    logger.info("Fetching logs from %s to %s (GAE TZ)" 
-            % (time_period['start_human'],time_period['end_human']))
-
+    intervals = _split_time_period(start,end)
+    
     # TODO - move to classes instead of globals
     global last_time_period 
     last_time_period = time_period
@@ -119,33 +148,44 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
     f = open(dest, mode)
 
     try:
-        for req_log in logservice.fetch(end_time=end, 
-                start_time=start, 
-                minimum_log_level=logservice.LOG_LEVEL_INFO, 
-                version_ids=version_ids, 
-                include_app_logs=True, include_incomplete=True, 
-                offset=offset):
-            
-            logger.debug("Retrieved - %s" % req_log.combined)
-            
-            i = i + 1
-            if i % 100 == 0:
-                logger.info("Fetched %d logs so far" % i)
+        for interval in intervals:
+            start, end = interval
+            logger.info("Interval : %s - %s" % (start,end))
 
-            f.write(_prepare_json(req_log))
-            f.write('\n')
+            for req_log in logservice.fetch(end_time=end, 
+                    start_time=start, 
+                    minimum_log_level=logservice.LOG_LEVEL_INFO, 
+                    version_ids=version_ids, 
+                    include_app_logs=True, include_incomplete=True, 
+                    offset=offset):
+                
+                logger.debug("Retrieved - %s" % req_log.combined)
+                
+                i = i + 1
+                if i % 100 == 0:
+                    logger.info("Fetched %d req logs so far" % i)
 
-            # keeping track in case - if need to resume
-            global last_offset 
-            last_offset = req_log.offset
-            # end fetch
+                f.write(_prepare_json(req_log))
+                f.write('\n')
+
+                # keeping track in case - if need to resume
+                global last_offset 
+                last_offset = req_log.offset
+                # end fetch
+            
+            # end interval
     except:
-        pass
+        logger.exception("Something went wrong")
+        save_recovery_info()
     
     logger.info("Retrieved %d logs" % i)
 
     f.close()
     return ""
+
+def save_recovery_info():
+    #TODO
+    pass
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, termination_handler)
