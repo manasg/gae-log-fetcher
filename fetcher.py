@@ -20,7 +20,7 @@ import argparse
 RECOVERY_LOG = '/tmp/recovery.log'
 PERIOD_LENGTH = timedelta(minutes=2)
 PERIOD_END_NOW = timedelta(minutes=1)
-GAE_TZ = 'America/Los_Angeles'
+GAE_TZ = 'US/Pacific'
 
 logger = logging.getLogger()
 

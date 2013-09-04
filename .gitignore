@@ -3,3 +3,4 @@ fetcher.conf
 gae_sdk
 
 *.swp
+_dumps
