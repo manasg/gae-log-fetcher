@@ -20,7 +20,7 @@ import argparse
 RECOVERY_LOG = '/tmp/recovery.log'
 PERIOD_LENGTH = timedelta(minutes=2)
 PERIOD_END_NOW = timedelta(minutes=1)
-GAE_TZ = 'US/Pacific'
+GAE_TZ = tz.gettz('US/Pacific')
 
 logger = logging.getLogger()
 
@@ -50,7 +50,7 @@ def _prepare_json(req_log):
     
     # Timestamp - this helps if events are not coming in chronological order
     t = datetime.fromtimestamp(req_log.end_time)
-    t = t.replace(tzinfo=tz.gettz(GAE_TZ))
+    t = t.replace(tzinfo=GAE_TZ)
     data['@timestamp'] = t.isoformat()
     
     # processing APP Logs
@@ -59,7 +59,7 @@ def _prepare_json(req_log):
         app_log_msgs = []
         for app_log in req_log.app_logs:
             t = datetime.fromtimestamp(app_log.time)
-            t = t.replace(tzinfo=tz.gettz(GAE_TZ))
+            t = t.replace(tzinfo=GAE_TZ)
             l = _get_level(app_log.level)
             app_log_msgs.append("%s %s %s" 
                 %(t.isoformat(), l, app_log.message) )
@@ -81,7 +81,7 @@ def termination_handler(signal, frame):
 
 def get_time_period():
     # GAE logservice API expects everything in PDT
-    gae_tz = tz.gettz(GAE_TZ)
+    gae_tz = GAE_TZ
 
     end = datetime.now(gae_tz) - PERIOD_END_NOW 
     #seconds, microsecond =0
