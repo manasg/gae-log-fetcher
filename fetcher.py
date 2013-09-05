@@ -11,6 +11,8 @@ from datetime import timedelta
 
 from google.appengine.ext.remote_api import remote_api_stub
 from google.appengine.api.logservice import logservice
+from google.appengine.ext.remote_api.remote_api_stub import ConfigurationError
+
 import getpass
 import simplejson as json
 import base64
@@ -125,7 +127,7 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
 
     try:
         remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
-    except google.appengine.ext.remote_api.remote_api_stub.ConfigurationError:
+    except ConfigurationError:
         # Token expired?
         logger.exception("Token validation failed. Probably expired. Will retry")
         remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
