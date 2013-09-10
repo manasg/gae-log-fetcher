@@ -188,7 +188,7 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
         logger.exception("Something went wrong")
         save_recovery_info()
     
-    logger.info("Retrieved %d logs" % i)
+    logger.info("Retrieved %d logs. Done." % i)
 
     f.close()
     return ""
