@@ -13,7 +13,7 @@ Pre-req
 
 - You need to turn on remote_api for your GAE app
 
-- Install yaml,simplejson module -> sudo pip install PyYAML
+- Install yaml,simplejson,python-dateutil modules -> sudo pip install PyYAML
 
 - Download GAE SDK - python/linux - http://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip
 
