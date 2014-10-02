@@ -12,6 +12,7 @@ from datetime import timedelta
 from google.appengine.ext.remote_api import remote_api_stub
 from google.appengine.api.logservice import logservice
 from google.appengine.ext.remote_api.remote_api_stub import ConfigurationError
+from google.appengine.tools.remote_api_shell import DEFAULT_PATH as REMOTE_API_PATH
 
 import getpass
 import simplejson as json
@@ -126,11 +127,11 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
     f = lambda : (username, password)
 
     try:
-        remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
+        remote_api_stub.ConfigureRemoteApi(None, REMOTE_API_PATH, f, app_name)
     except ConfigurationError:
         # Token expired?
         logger.exception("Token validation failed. Probably expired. Will retry")
-        remote_api_stub.ConfigureRemoteApi(None, '/remote_api', f, app_name)
+        remote_api_stub.ConfigureRemoteApi(None, REMOTE_API_PATH, f, app_name)
     
     logger.info("Successfully authenticated")
 
