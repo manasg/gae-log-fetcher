@@ -127,11 +127,11 @@ def fetch_logs(time_period, recovery_log, username, password, app_name, version_
     f = lambda : (username, password)
 
     try:
-        remote_api_stub.ConfigureRemoteApi(None, REMOTE_API_PATH, f, app_name)
+        remote_api_stub.ConfigureRemoteApi(None, REMOTE_API_PATH, f, app_name, secure=True)
     except ConfigurationError:
         # Token expired?
         logger.exception("Token validation failed. Probably expired. Will retry")
-        remote_api_stub.ConfigureRemoteApi(None, REMOTE_API_PATH, f, app_name)
+        remote_api_stub.ConfigureRemoteApi(None, REMOTE_API_PATH, f, app_name, secure=True)
     
     logger.info("Successfully authenticated")
 
